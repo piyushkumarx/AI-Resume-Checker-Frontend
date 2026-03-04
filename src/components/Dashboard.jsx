@@ -59,7 +59,7 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
 
     const token = await user.getIdToken();
 
-    // Upload all files first
+    
     for (let file of files) {
       const formData = new FormData();
       formData.append("file", file);
@@ -73,7 +73,7 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
       });
     }
 
-    // Then call ranking
+  
     const response = await fetch("https://ai-resume-checker-backend-t57a.onrender.com/rank-resumes", {
       method: "POST",
       headers: {
