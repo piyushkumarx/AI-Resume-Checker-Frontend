@@ -1,5 +1,5 @@
 import React from "react";
-import "./Invalid.css"
+import "./invalid.css"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircleXmark,
