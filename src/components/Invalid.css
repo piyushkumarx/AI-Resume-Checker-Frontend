@@ -1,0 +1,74 @@
+
+.modal-overlay{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+
+.wrong-icon{
+    color: rgba(233, 27, 27, 1.00);
+    font-size: 3rem;
+    margin-bottom: 18px;
+   
+}
+
+.modal-container{
+  background: #fff;
+  padding: 1rem;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-out;
+}
+
+
+
+
+.modal-header h2{
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.modal-body p{
+  color: #666;
+  margin: 1.5rem 0;
+  line-height: 1.5;
+}
+
+
+.close-btn{
+ 
+  color: black;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 28px;
+  cursor: pointer;
+  font-size: 1rem;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.311);
+  
+}
+
+
+
+.success-icon{
+  font-size: 60px;
+  color: #16a34a;
+  margin-bottom: 15px;
+}
+
+.wrong-icon {
+  font-size: 60px;
+  color: #ef4444;
+  margin-bottom: 15px;
+}

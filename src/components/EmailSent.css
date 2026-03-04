@@ -1,0 +1,114 @@
+.email-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 10px 0;
+  /* margin-bottom: 10px; */
+}
+
+.email-subtitle {
+  font-size: 14px;
+  color: #718096;
+  margin-bottom: 10px;
+}
+
+.email-note {
+  font-size: 13px;
+  margin-top: 10px;
+  color: #888;
+}
+
+.email-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  background-color: #7736ff;
+  color: white;
+  border: none;
+  border-radius: 28px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.email-switch-text {
+  margin-top: 20px;
+  font-size: 13px;
+  color: #888;
+}
+
+.email-switch-text span {
+  font-weight: 600;
+  color: #885ccf;
+  cursor: pointer;
+}
+
+.email-heading{
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.open-it{
+    position: absolute;
+    height: 150px;
+    bottom: -126px;
+    right: 0px;
+}
+
+
+.gmail-logo-container{
+    height: 100px;
+}
+
+.gmail-logo-container img{
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
+}
+
+.email-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  background: linear-gradient(90deg, #7b3ff2, #6a2de2);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  margin-top: 20px;
+  position: relative;
+  overflow: visible;
+}
+
+
+
+
+@media (max-width: 480px) {
+  .email-title {
+    font-size: 20px;
+  }
+
+  .email-subtitle {
+    font-size: 13px;
+  }
+
+  .email-note {
+    font-size: 12px;
+  }
+
+  .email-btn {
+    padding: 12px;
+    font-size: 15px;
+  }
+
+  .email-switch-text {
+    font-size: 12px;
+  }
+
+  .open-it{
+    position: absolute;
+    height: 110px;
+    bottom: -88px;
+    right: 0px;
+}
+
+  
+}

@@ -1,0 +1,18 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body{
+  
+  overflow-x: hidden;
+
+  padding: 0 10px;
+   display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  font-family: 'system ui', Tahoma, Geneva, Verdana, sans-serif;
+}
