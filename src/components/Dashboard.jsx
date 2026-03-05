@@ -24,6 +24,8 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
   const [loading, setLoading] = useState(false);
   const [showResumes, setShowResumes] = useState(false);
 
+  const API = "https://thousand-steven-section-actors.trycloudflare.com"
+
   useEffect(() => {
     const user = auth.currentUser;
     if (!user) setPage("login");
@@ -64,7 +66,7 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
       const formData = new FormData();
       formData.append("file", file);
 
-      await fetch("https://ai-resume-checker-backend-t57a.onrender.com/upload-resume", {
+      await fetch(`${API}/upload-resume`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -74,7 +76,7 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
     }
 
   
-    const response = await fetch("https://ai-resume-checker-backend-t57a.onrender.com/rank-resumes", {
+    const response = await fetch(`${API}/rank-resumes`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -105,7 +107,7 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
   const user = auth.currentUser;
   const token = await user.getIdToken();
 
-  await fetch("https://ai-resume-checker-backend-t57a.onrender.com/clear-resumes", {
+  await fetch(`${API}/clear-resumes`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`
