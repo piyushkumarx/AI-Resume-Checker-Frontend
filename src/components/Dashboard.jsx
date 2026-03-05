@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./Dashboard.css";
 import { auth } from "../firebase";
 import Navbar from "./Navbar";
-import LoadingOverlay from "./LoadingOverlay"; // Added back from first file
+import LoadingOverlay from "./LoadingOverlay"; 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUpload,
@@ -60,13 +60,13 @@ const Dashboard = ({ setPage, setModalData, handleLogout }) => {
       }
       const token = await user.getIdToken();
 
-      // Step 1: Clear old resumes (Logic from first file)
+  
       await fetch(`${API}/clear-resumes`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Step 2: Parallel upload for speed (Logic from first file)
+      
       await Promise.all(
         files.map((file) => {
           const formData = new FormData();
@@ -79,7 +79,7 @@ const Dashboard = ({ setPage, setModalData, handleLogout }) => {
         })
       );
 
-      // Step 3: Rank Resumes
+      
       const response = await fetch(`${API}/rank-resumes`, {
         method: "POST",
         headers: {
