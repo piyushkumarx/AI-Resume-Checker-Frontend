@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./Dashboard.css";
 import { auth } from "../firebase";
 import Navbar from "./Navbar";
+import LoadingOverlay from "./LoadingOverlay"; // Added back from first file
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUpload,
@@ -17,14 +18,14 @@ import {
   faChevronUp,
 } from "@fortawesome/free-solid-svg-icons";
 
-const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
+const Dashboard = ({ setPage, setModalData, handleLogout }) => {
   const [files, setFiles] = useState([]);
   const [jobDesc, setJobDesc] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showResumes, setShowResumes] = useState(false);
 
-  const API = "https://thousand-steven-section-actors.trycloudflare.com"
+  const API = "https://thousand-steven-section-actors.trycloudflare.com";
 
   useEffect(() => {
     const user = auth.currentUser;
@@ -33,9 +34,7 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
 
   const averageScore =
     results.length > 0
-      ? (
-          results.reduce((a, b) => a + b.match_score, 0) / results.length
-        ).toFixed(1)
+      ? (results.reduce((a, b) => a + b.match_score, 0) / results.length).toFixed(1)
       : 0;
 
   const handleDelete = (index) => {
@@ -52,84 +51,88 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
 
     setLoading(true);
 
-    const user = auth.currentUser;
-    if (!user) {
-      alert("Please login again");
-      setPage("login");
-      return;
-    }
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Please login again");
+        setPage("login");
+        return;
+      }
+      const token = await user.getIdToken();
 
-    const token = await user.getIdToken();
+      // Step 1: Clear old resumes (Logic from first file)
+      await fetch(`${API}/clear-resumes`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    
-    for (let file of files) {
-      const formData = new FormData();
-      formData.append("file", file);
+      // Step 2: Parallel upload for speed (Logic from first file)
+      await Promise.all(
+        files.map((file) => {
+          const formData = new FormData();
+          formData.append("file", file);
+          return fetch(`${API}/upload-resume`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+          });
+        })
+      );
 
-      await fetch(`${API}/upload-resume`, {
+      // Step 3: Rank Resumes
+      const response = await fetch(`${API}/rank-resumes`, {
         method: "POST",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: formData,
+        body: JSON.stringify({ job_description: jobDesc }),
+      });
+
+      const data = await response.json();
+      setResults(data.ranked_results || []);
+    } catch (err) {
+      console.error(err);
+      setModalData({
+        title: "Error",
+        message: "Something went wrong during analysis.",
       });
     }
 
-  
-    const response = await fetch(`${API}/rank-resumes`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        job_description: jobDesc,
-      }),
-    });
-
-    const data = await response.json();
-    setResults(data.ranked_results || []);
     setLoading(false);
   };
 
-
   const handleClearResumes = async () => {
-
-  if (files.length === 0) {
-    setModalData({
-      title: "Nothing to Delete",
-      message: "No resumes found to delete."
-      
-    });
-    return;
-  }
-
-  const user = auth.currentUser;
-  const token = await user.getIdToken();
-
-  await fetch(`${API}/clear-resumes`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`
+    if (files.length === 0) {
+      setModalData({ title: "Nothing to Delete", message: "No resumes found." });
+      return;
     }
-  });
 
-  setFiles([]);
-  setResults([]);
+    const user = auth.currentUser;
+    const token = await user.getIdToken();
 
-  setModalData({
-    title: "Success",
-    message: "All resumes cleared successfully."
-  });
-};
+    await fetch(`${API}/clear-resumes`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    setFiles([]);
+    setResults([]);
+    setModalData({ title: "Success", message: "All resumes cleared successfully." });
+  };
 
   return (
+    <>
+    {loading && <LoadingOverlay />}
     <div className="app-container">
-      <Navbar  handleLogout={handleLogout} />
+      
+      
+      
+      <Navbar handleLogout={handleLogout} />
 
       <main className="dashboard-content">
         <section className="main-layout">
-         
+          
           <aside className="left-column">
             <div className="glass-card">
               <div className="dlt-conatiner">
@@ -155,17 +158,12 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
                   accept=".pdf,.docx"
                   onChange={(e) => {
                     const selectedFiles = Array.from(e.target.files);
-
                     const validFiles = [];
                     const invalidFiles = [];
 
                     selectedFiles.forEach((file) => {
                       const fileName = file.name.toLowerCase();
-
-                      if (
-                        fileName.endsWith(".pdf") ||
-                        fileName.endsWith(".docx")
-                      ) {
+                      if (fileName.endsWith(".pdf") || fileName.endsWith(".docx")) {
                         validFiles.push(file);
                       } else {
                         invalidFiles.push(file.name);
@@ -175,14 +173,13 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
                     if (invalidFiles.length > 0) {
                       setModalData({
                         title: "Unsupported File Type",
-                        message: `This files is not supported:\n${invalidFiles.join()}\n\nOnly PDF and DOCX files are allowed`,
+                        message: `These files are not supported:\n${invalidFiles.join(", ")}\n\nOnly PDF and DOCX files are allowed`,
                       });
                     }
 
                     if (validFiles.length > 0) {
                       setFiles((prev) => [...prev, ...validFiles]);
                     }
-
                     e.target.value = null;
                   }}
                 />
@@ -196,7 +193,6 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
                     ? `${files.length} resume(s) uploaded`
                     : "Click to upload resumes"}
                 </p>
-
                 <span className="upload-hint">PDF, DOCX up to 10MB</span>
               </div>
 
@@ -219,11 +215,8 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
                 <div className="uploaded-list">
                   {files.map((file, index) => (
                     <div key={index} className="uploaded-item">
-                      <span className="file-name"> {file.name}</span>
-                      <button
-                        className="delete-btn"
-                        onClick={() => handleDelete(index)}
-                      >
+                      <span className="file-name">{file.name}</span>
+                      <button className="delete-btn" onClick={() => handleDelete(index)}>
                         <FontAwesomeIcon icon={faTrash} />
                       </button>
                     </div>
@@ -232,23 +225,18 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
               )}
             </div>
 
-            {/* Job Description */}
+            
             <div className="glass-card">
               <h3 className="card-title">
                 <FontAwesomeIcon icon={faBriefcase} /> Job Requirements
               </h3>
-
-              <p className="card-desc">
-                Paste the job description to match against
-              </p>
-
+              <p className="card-desc">Paste the job description to match against</p>
               <textarea
                 className="custom-textarea"
-                placeholder="Example: We are looking for a React developer with 2+ years of experience in JavaScript, APIs, and Firebase..."
+                placeholder="Example: We are looking for a React developer with 2+ years of experience..."
                 value={jobDesc}
                 onChange={(e) => setJobDesc(e.target.value)}
               />
-
               <button
                 className="analyze-btn"
                 onClick={handleAnalyze}
@@ -259,7 +247,7 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
             </div>
           </aside>
 
-          {/* RIGHT SIDE */}
+          
           <article className="results-column">
             <section className="stats-row-inline">
               <div className="stat-card">
@@ -288,9 +276,7 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
                 </div>
                 <div>
                   <span className="stat-label">TOP MATCH</span>
-                  <h2 className="stat-value">
-                    {results[0]?.match_score || 0}%
-                  </h2>
+                  <h2 className="stat-value">{results[0]?.match_score || 0}%</h2>
                 </div>
               </div>
             </section>
@@ -308,17 +294,14 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
                       <FontAwesomeIcon icon={faFolderOpen} />
                     </div>
                     <h4>No Results Yet</h4>
-                    <p>
-                      Upload resumes and paste a job description to see results
-                      here.
-                    </p>
+                    <p>Upload resumes and paste a job description to see results here.</p>
                   </div>
                 ) : (
                   <div className="results-list">
                     {results.map((candidate, index) => (
                       <div key={index} className="result-item">
                         <span>
-                          {index + 1}&nbsp;&nbsp;{files[index]?.name}
+                          {index + 1}&nbsp;&nbsp;{candidate.file_name}
                         </span>
                         <strong>{candidate.match_score}%</strong>
                       </div>
@@ -331,7 +314,9 @@ const Dashboard = ({ setPage, setModalData ,  handleLogout}) => {
         </section>
       </main>
     </div>
+    </>
   );
+  
 };
 
 export default Dashboard;
